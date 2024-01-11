@@ -18,4 +18,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('users/get-states', [UserController::class, 'getStates'])->name('users.get_states');
+Route::get('users/get-cities', [UserController::class, 'getCities'])->name('users.get_cities');
 Route::resource('users', UserController::class);

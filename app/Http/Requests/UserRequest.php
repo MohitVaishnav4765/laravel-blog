@@ -24,7 +24,7 @@ class UserRequest extends FormRequest
         return [
             'name' => 'required',
             'email' => 'required|unique:users,email',
-            'phone' => 'required|regex:/^[789]\d{9}$/|unique:users,phone',
+            'phone' => 'required|regex:/^[6789]\d{9}$/|unique:users,phone',
             'country' => 'required',
             'state' => 'required',
             'city' => 'required',

@@ -10,10 +10,16 @@
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-css/1.4.6/select2-bootstrap.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="{{ asset('lib/datatables/DataTables-bs/css/dataTables.bootstrap4.min.css') }}">
+<link rel="stylesheet" href="{{ asset('lib/datatables/responsive/css/responsive.bootstrap4.min.css') }}">
+
     <title>Blog</title>
     <style>
         .help-text{
             color:red;
+        }
+        table thead{
+            background:red;
         }
     </style>
 </head>
@@ -56,25 +62,14 @@
                             </div>
                             <div class="form-group">
                                 <label for="name">State <span class="text-danger">*</span></label>
-                                <select name="state" id="state" class="basic-select2 form-control" disabled>
-                                    <option value="">Please Select</option>
-                                    @if(count($states))
-                                    @foreach($states as $state)
-                                        <option value="{{$state->state_id}}">{{$state->state_name}}</option>
-                                    @endforeach
-                                    @endif
+                                <select name="state" id="state" class="basic-select2 get_states form-control" disabled>
                                 </select>
                             </div>
 
                             <div class="form-group">
                                 <label for="name">City <span class="text-danger">*</span></label>
-                                <select name="city" id="city" class="basic-select2 form-control" disabled>
+                                <select name="city" id="city" class="basic-select2 get_cities form-control" disabled>
                                     <option value="">Please Select</option>
-                                    @if(count($cities))
-                                    @foreach($cities as $city)
-                                        <option value="{{$city->city_id}}">{{$city->city_name}}</option>
-                                    @endforeach
-                                    @endif
                                 </select>
                             </div>
                             <div class="form-group">
@@ -88,7 +83,13 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12"></div>
+            <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                <div class="card shadow">
+                    <div class="card-body">
+                        {!!$dt_table->table()!!}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
@@ -96,6 +97,13 @@
     <script src="{{asset('vendor/jsvalidation/js/jsvalidation.min.js')}}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="{{ asset('lib/datatables/DataTables-bs/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('lib/datatables/DataTables-bs/js/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('lib/datatables/responsive/js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('lib/datatables/responsive/js/responsive.bootstrap4.min.js')}}"></script>
+    @isset ($dt_table)
+        {!! $dt_table->scripts() !!}
+    @endisset
     @isset($validator)
         {!! $validator!!}
     @endisset
@@ -107,18 +115,17 @@
             })
 
             $('#country').on('change',function(e){
+                getStates(e.target.value);
                 $('#state').prop('disabled',false);
             })
 
-            $('#state').on('change',function(){
+            $('#state').on('change',function(e){
+                getCities(e.target.value);
                 $('#city').prop('disabled',false);
             })
 
            $('#form').on('submit',function(e){
                 e.preventDefault();
-
-               
-
                 $.ajax({
                     type:'POST',
                     url:"{{route('users.store')}}",
@@ -135,7 +142,7 @@
                             text: res.message,
                             className: "success",
                         }).showToast();
-                       
+                        $('#user-table').DataTable().ajax.reload();
                     },
                     error:function(error){
                         Toastify({
@@ -157,6 +164,64 @@
             $('#city').val('').trigger('change');
             $('#state').prop('disabled',true)
             $('#city').prop('disabled',true)
+        }
+
+        function getStates(country_id){
+            $(".get_states").select2({
+            placeholder: 'Please select state',
+            ajax: {
+                url: "{{ route('users.get_states') }}",
+                data: function(params) {
+                    var query = {
+                        search: params.term,
+                        country_id:country_id
+                    }
+
+                    return query;
+                },
+                processResults: function(data) {
+                    return {
+                        results: $.map(data, function(item) {
+                            return {
+                                text: item.state_name,
+                                id: item.state_id
+                            }
+                        }),
+                    };
+                }
+            }
+        });
+
+
+        }
+
+        function getCities(state_id){
+            $(".get_cities").select2({
+            placeholder: 'Please select city',
+            ajax: {
+                url: "{{ route('users.get_cities') }}",
+                data: function(params) {
+                    var query = {
+                        search: params.term,
+                        state_id:state_id
+                    }
+
+                    return query;
+                },
+                processResults: function(data) {
+                    return {
+                        results: $.map(data, function(item) {
+                            return {
+                                text: item.city_name,
+                                id: item.city_id
+                            }
+                        }),
+                    };
+                }
+            }
+        });
+
+        
         }
     </script>
 </body>
