@@ -35,7 +35,7 @@ class UserController extends Controller
                         $image_name = $user->profile_image;
                     }
 
-                    return '<img src="' . Storage::url('uploads/' . $image_name) . '" class="img-fuild rounded">';
+                    return '<img src="' . Storage::url('uploads/' . $image_name) . '" class="img-fuild rounded" width="100px">';
                 })
                 ->rawColumns(['image'])
                 ->removeColumn('id')
